@@ -1,25 +1,39 @@
 #include "closeststring.hpp"
 
 ClosestString::ClosestString(const std::vector<std::string> &setOfStrings, const std::vector<char> &allowedGeneValues) :
-    _setOfStrings(setOfStrings), _allowedGeneValues(allowedGeneValues)
+    _setOfStrings(std::move(setOfStrings)), _allowedGeneValues(std::move(allowedGeneValues))
 {
     _length = _setOfStrings[0].length();
     _numOfIterations = 100;
     _generationSize = 20;
     _mutationRate = 0.01;
     _reproductionSize = 20;
-    _k = 5;
+    _tournamentK = 5;
+    _crossoverProb = 0.5;
+}
+
+ClosestString::ClosestString(const std::vector<std::string> &setOfStrings, const std::vector<char> &allowedGeneValues,
+                             unsigned numOfIterations, unsigned generationSize, double mutationRate,
+                             unsigned tournamentK, double crossoverProb)
+    : _setOfStrings(std::move(setOfStrings)), _allowedGeneValues(std::move(allowedGeneValues)), _numOfIterations(numOfIterations),
+      _generationSize(generationSize), _mutationRate(mutationRate), _reproductionSize(generationSize),
+      _tournamentK(tournamentK), _crossoverProb(crossoverProb)
+{
+    _length = _setOfStrings[0].length();
+
+    std::cout << _numOfIterations << " " << _generationSize << " " << _mutationRate << " " << _reproductionSize
+              << _tournamentK << " " << _crossoverProb << std::endl;
 }
 
 std::vector<Chromosome> ClosestString::initialPopulation(){
 
-    srand(time(nullptr));
+    srand(unsigned(time(nullptr)));
 
     std::vector<Chromosome> initPopulation;
     for (unsigned i = 0; i < _generationSize; ++i){
         std::vector<char> geneticCode;
         for (size_t j = 0; j < _length; j++){
-            size_t pos = rand() % _allowedGeneValues.size();
+            size_t pos = unsigned(rand()) % _allowedGeneValues.size();
             geneticCode.push_back(_allowedGeneValues[pos]);
         }
         std::string current = std::string(std::cbegin(geneticCode), std::cend(geneticCode));
@@ -34,18 +48,14 @@ std::vector<Chromosome> ClosestString::selection(const std::vector<Chromosome> &
         forReproduction.push_back(pickOneTournament(population));
     }
 
-    for(size_t i = 0, n = forReproduction.size(); i < n; ++i){
-        std::cout << forReproduction[i].fit << " " << forReproduction[i].value << std::endl;
-    }
-
     return forReproduction;
 }
 
 Chromosome ClosestString::pickOneTournament(const std::vector<Chromosome> &pop) {
     //set here inf
     Chromosome bestC{"", 1000};
-    for(int i = 0; i < _k; ++i){
-        size_t pos = rand() % pop.size();
+    for(size_t i = 0; i < _tournamentK; ++i){
+        size_t pos = unsigned(rand()) % pop.size();
         if(pop[pos].fit < bestC.fit){
             bestC = pop[pos];
         }
@@ -54,19 +64,58 @@ Chromosome ClosestString::pickOneTournament(const std::vector<Chromosome> &pop) 
 }
 
 std::vector<Chromosome> ClosestString::createGeneration(const std::vector<Chromosome> &forReproduction) {
-    //crossover
-    //mutation
-    return {Chromosome{"A", 0}};
+
+    std::vector<Chromosome> newGeneration;
+    for (size_t i = 0; i < _generationSize; i+=2) {
+        size_t index1 = unsigned(rand()) % forReproduction.size();
+        size_t index2 = unsigned(rand()) % forReproduction.size();
+
+        std::pair<Chromosome, Chromosome> children =
+                crossover(forReproduction[index1], forReproduction[index2]);
+
+        mutation(children.first);
+        mutation(children.second);
+
+        newGeneration.push_back(children.first);
+        newGeneration.push_back(children.second);
+    }
+
+    return newGeneration;
 }
 
 std::pair<Chromosome, Chromosome> ClosestString::crossover(const Chromosome &parent1, const Chromosome &parent2)
 {
-    return {{"", 0}, {"", 0}};
+    size_t n = parent1.value.size();
+    std::string child1, child2;
+
+    child1.resize(n);
+    child2.resize(n);
+
+    for (size_t i = 0; i < n; ++i) {
+        double tmp = double((double(rand()) / RAND_MAX));
+        if (tmp < _crossoverProb) {
+            child1.at(i) = parent1.value.at(i);
+            child2.at(i) = parent2.value.at(i);
+        } else {
+            child2.at(i) = parent1.value.at(i);
+            child1.at(i) = parent2.value.at(i);
+        }
+    }
+
+
+    return {Chromosome{child1, fitness(child1)}, Chromosome{child2, fitness(child2)}};
 }
 
-Chromosome ClosestString::mutation(Chromosome chromo)
+void ClosestString::mutation(Chromosome &chromo)
 {
-    return {"", 0};
+    double mutationImpossible = (double(rand()) / RAND_MAX);
+    if (mutationImpossible < _mutationRate) {
+        size_t index = unsigned(rand()) % chromo.value.size();
+        size_t pos = unsigned(rand()) % _allowedGeneValues.size();
+        chromo.value.at(index) = _allowedGeneValues.at(pos);
+        chromo.fit = fitness(chromo.value);
+    }
+
 }
 
 int hamingDistance(const std::string & s1, const std::string & s2){
@@ -98,13 +147,34 @@ void ClosestString::optimize(){
         std::cout << c.value << " " << c.fit << std::endl;
     }
 
-    int i = 0;
-    while(i < _numOfIterations){
+    size_t i = 0;
+    while(stopConditions(i, chromosomes)){
         std::vector<Chromosome> forReproduction = selection(chromosomes);
         chromosomes = createGeneration(forReproduction);
-        _best = *(std::max_element(std::cbegin(chromosomes), std::cend(chromosomes), compare));
-        //std::cout << "Iteration: " << i << " -> " << _best.value << " " << _best.fit << std::endl;
-        i++;
+
+        std::for_each(std::cbegin(chromosomes), std::cend(chromosomes),
+                      [] (Chromosome c) {std::cout << c.value << " -> " << c.fit << "\n";});
+        std::cout << std::endl;
+
+        _best = *(std::min_element(std::cbegin(chromosomes), std::cend(chromosomes), compare));
+        std::cout << "Iteration: " << (++i) << " -> " << _best.value << " " << _best.fit << std::endl;
     }
+
     std::cout << "end" << std::endl;
 }
+
+bool ClosestString::stopConditions(size_t i, const std::vector<Chromosome> &)
+{
+    if (i >= _numOfIterations)
+        return false;
+
+    if (_best.fit == 0)
+        return false;
+
+    return true;
+}
+
+
+
+
+

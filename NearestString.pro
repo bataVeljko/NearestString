@@ -9,3 +9,5 @@ SOURCES += \
 
 HEADERS += \
     closeststring.hpp
+
+DISTFILES +=
