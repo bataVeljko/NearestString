@@ -10,22 +10,25 @@ ClosestString::ClosestString(const std::vector<std::string> &setOfStrings, const
     _reproductionSize = 20;
     _tournamentK = 5;
     _crossoverProb = 0.5;
-
     _N = _numOfIterations / 4;
 }
 
 ClosestString::ClosestString(const std::vector<std::string> &setOfStrings, const std::vector<char> &allowedGeneValues,
                              unsigned numOfIterations, unsigned generationSize, double mutationRate,
                              unsigned tournamentK, double crossoverProb)
-    : _setOfStrings(std::move(setOfStrings)), _allowedGeneValues(std::move(allowedGeneValues)), _numOfIterations(numOfIterations),
-      _generationSize(generationSize), _mutationRate(mutationRate), _reproductionSize(generationSize),
-      _tournamentK(tournamentK), _crossoverProb(crossoverProb)
+    : _setOfStrings(std::move(setOfStrings)),
+      _allowedGeneValues(std::move(allowedGeneValues)),
+      _numOfIterations(numOfIterations),
+      _generationSize(generationSize),
+      _mutationRate(mutationRate),
+      _reproductionSize(generationSize),
+      _tournamentK(tournamentK),
+      _crossoverProb(crossoverProb)
 {
     _length = _setOfStrings[0].length();
     _N = _numOfIterations / 4;
 
-    std::cout << _numOfIterations << " " << _generationSize << " " << _mutationRate << " " << _reproductionSize << " "
-              << _tournamentK << " " << _crossoverProb << std::endl;
+    printf("%18d %14d %12.2lf %14d %20.1lf ", _numOfIterations, _generationSize, _mutationRate, _tournamentK, _crossoverProb);
 }
 
 std::vector<Chromosome> ClosestString::initialPopulation(){
@@ -35,10 +38,12 @@ std::vector<Chromosome> ClosestString::initialPopulation(){
     std::vector<Chromosome> initPopulation;
     for (unsigned i = 0; i < _generationSize; ++i){
         std::vector<char> geneticCode;
+        //make one string as vector<char> from allowed charachers
         for (size_t j = 0; j < _length; j++){
             size_t pos = unsigned(rand()) % _allowedGeneValues.size();
             geneticCode.push_back(_allowedGeneValues[pos]);
         }
+        //make string from vector<char>
         std::string current = std::string(std::cbegin(geneticCode), std::cend(geneticCode));
         initPopulation.push_back(Chromosome{current, fitness(current)});
     }
@@ -55,8 +60,7 @@ std::vector<Chromosome> ClosestString::selection(const std::vector<Chromosome> &
 }
 
 Chromosome ClosestString::pickOneTournament(const std::vector<Chromosome> &pop) {
-    //set here inf
-    Chromosome bestC{"", 1000};
+    Chromosome bestC{"", INT_MAX};
     for(size_t i = 0; i < _tournamentK; ++i){
         size_t pos = unsigned(rand()) % pop.size();
         if(pop[pos].fit < bestC.fit){
@@ -86,8 +90,8 @@ std::vector<Chromosome> ClosestString::createGeneration(const std::vector<Chromo
     return newGeneration;
 }
 
-std::pair<Chromosome, Chromosome> ClosestString::crossover(const Chromosome &parent1, const Chromosome &parent2)
-{
+std::pair<Chromosome, Chromosome> ClosestString::crossover(const Chromosome &parent1, const Chromosome &parent2) {
+
     size_t n = parent1.value.size();
     std::string child1, child2;
 
@@ -105,20 +109,21 @@ std::pair<Chromosome, Chromosome> ClosestString::crossover(const Chromosome &par
         }
     }
 
-
     return {Chromosome{child1, fitness(child1)}, Chromosome{child2, fitness(child2)}};
 }
 
-void ClosestString::mutation(Chromosome &chromo)
-{
+void ClosestString::mutation(Chromosome &chromo) {
+
     double mutationImpossible = (double(rand()) / RAND_MAX);
     if (mutationImpossible < _mutationRate) {
+        //select position in string that will be changed
         size_t index = unsigned(rand()) % chromo.value.size();
+        //select which charachter will be set on selected position in chromosome value
         size_t pos = unsigned(rand()) % _allowedGeneValues.size();
+
         chromo.value.at(index) = _allowedGeneValues.at(pos);
         chromo.fit = fitness(chromo.value);
     }
-
 }
 
 int hamingDistance(const std::string & s1, const std::string & s2){
@@ -130,11 +135,12 @@ int hamingDistance(const std::string & s1, const std::string & s2){
                               [] (char c1, char c2) {return c1 != c2 ? 1 : 0;});
 }
 
-int ClosestString::fitness(const std::string &current)
-{
+int ClosestString::fitness(const std::string &current) {
+    //Getting position in setOfStrings vector, that belongs to string which is furthest from Current chromosome value from population
     auto i = std::max_element(std::cbegin(_setOfStrings), std::cend(_setOfStrings),
                             [current](std::string s1, std::string s2){return hamingDistance(s1, current) < hamingDistance(s2, current);});
 
+    //Calculate their distance
     return hamingDistance(*i, current);
 }
 
@@ -145,48 +151,55 @@ bool compare(Chromosome c1, Chromosome c2){
 void ClosestString::optimize(){
     std::vector<Chromosome> chromosomes = initialPopulation();
 
-    std::cout << "-------------------------" << std::endl;
-    for (const auto & c : chromosomes) {
+    //std::cout << "-------------------------" << std::endl;
+    /*for (const auto & c : chromosomes) {
         std::cout << c.value << " " << c.fit << std::endl;
-    }
+    }*/
 
-    size_t i = 0;
-    while(stopConditions(i, chromosomes)){
+    size_t currIteration = 0;
+    while(stopConditions(currIteration, chromosomes)){
         std::vector<Chromosome> forReproduction = selection(chromosomes);
         chromosomes = createGeneration(forReproduction);
-
-        std::for_each(std::cbegin(chromosomes), std::cend(chromosomes),
+        /*std::for_each(std::cbegin(chromosomes), std::cend(chromosomes),
                       [] (Chromosome c) {std::cout << c.value << " -> " << c.fit << "\n";});
-        std::cout << std::endl;
+        std::cout << std::endl;*/
 
+        //Chromosome with smallest fit in population
         _best = *(std::min_element(std::cbegin(chromosomes), std::cend(chromosomes), compare));
-        std::cout << "Iteration: " << (++i) << " -> " << _best.value << " " << _best.fit << std::endl;
+        currIteration++;
+        //std::cout << "Iteration: " << (++currIteration) << " -> " << _best.value << " " << _best.fit << std::endl;
     }
-
-    std::cout << "end" << std::endl;
+    printf("%13zu ", currIteration);
+    size_t numOfSpaces = 9 - _best.value.size();
+    std::string spaces(numOfSpaces, ' ');
+    std::cout << spaces << _best.value;
+    printf(" %7d", _best.fit);
+    std::cout << std::endl;
 }
 
-bool ClosestString::stopConditions(size_t i, const std::vector<Chromosome> &)
+bool ClosestString::stopConditions(size_t currIteration, const std::vector<Chromosome> &)
 {
-    if (i >= _numOfIterations)
+    if (currIteration >= _numOfIterations)
         return false;
 
     if (_best.fit == 0)
         return false;
 
-    if (int(_lastN.size()) < _N) {
-        _lastN.push_back(_best.fit);
-    } else {
-        // if we have the same result in the last N generations, we stop
-        int sum = std::accumulate(std::cbegin(_lastN), std::cend(_lastN), 0);
-        if (sum / int(_lastN.size()) == _lastN[0]) {
-            return false;
+    // We won't use 0th generation, because it's inital population and best chromosome hasn't been initializated yet
+    if(currIteration){
+        if (int(_lastN.size()) < _N) {
+            _lastN.push_back(_best.fit);
+        } else {
+            // if we have the same result in the last N generations, we stop
+            int sum = std::accumulate(std::cbegin(_lastN), std::cend(_lastN), 0);
+            if (sum / _N == _lastN[0]) {
+                return false;
+            }
+            // else we add a new one, first we place first element on the back
+            // and then we replace it
+            std::rotate(std::begin(_lastN), std::end(_lastN)-1, std::end(_lastN));
+            _lastN.back() = _best.fit;
         }
-
-        // else we add a new one, first we place first element on the back
-        // and then we replace it
-        std::rotate(std::begin(_lastN), std::end(_lastN)-1, std::end(_lastN));
-        _lastN.back() = _best.fit;
     }
 
     return true;
