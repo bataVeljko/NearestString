@@ -50,6 +50,9 @@ private:
     double _crossoverProb;
     Chromosome _best;
 
+    // best fitness from the last N iterations
+    std::vector<int> _lastN;
+    int _N;
 };
 
 #endif // CLOSESTSTRING_HPP

@@ -1,0 +1,6 @@
+{
+    "iters" : [10, 100],
+    "popSize" : [20, 50, 100],
+    "mutationRate" : [0.01, 0.05],
+    "crossoverProb" : [0.3, 0.5]
+}

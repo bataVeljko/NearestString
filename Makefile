@@ -8,3 +8,7 @@ main.o : main.cpp closeststring.hpp
 
 closeststring.o : closeststring.cpp closeststring.hpp
 	g++ $(CXXFLAGS) -c $<
+
+.PHONY: clean
+clean:
+	rm nearestString *.o

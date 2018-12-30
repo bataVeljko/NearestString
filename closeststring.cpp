@@ -10,6 +10,8 @@ ClosestString::ClosestString(const std::vector<std::string> &setOfStrings, const
     _reproductionSize = 20;
     _tournamentK = 5;
     _crossoverProb = 0.5;
+
+    _N = _numOfIterations / 4;
 }
 
 ClosestString::ClosestString(const std::vector<std::string> &setOfStrings, const std::vector<char> &allowedGeneValues,
@@ -20,8 +22,9 @@ ClosestString::ClosestString(const std::vector<std::string> &setOfStrings, const
       _tournamentK(tournamentK), _crossoverProb(crossoverProb)
 {
     _length = _setOfStrings[0].length();
+    _N = _numOfIterations / 4;
 
-    std::cout << _numOfIterations << " " << _generationSize << " " << _mutationRate << " " << _reproductionSize
+    std::cout << _numOfIterations << " " << _generationSize << " " << _mutationRate << " " << _reproductionSize << " "
               << _tournamentK << " " << _crossoverProb << std::endl;
 }
 
@@ -170,6 +173,21 @@ bool ClosestString::stopConditions(size_t i, const std::vector<Chromosome> &)
 
     if (_best.fit == 0)
         return false;
+
+    if (int(_lastN.size()) < _N) {
+        _lastN.push_back(_best.fit);
+    } else {
+        // if we have the same result in the last N generations, we stop
+        int sum = std::accumulate(std::cbegin(_lastN), std::cend(_lastN), 0);
+        if (sum / int(_lastN.size()) == _lastN[0]) {
+            return false;
+        }
+
+        // else we add a new one, first we place first element on the back
+        // and then we replace it
+        std::rotate(std::begin(_lastN), std::end(_lastN)-1, std::end(_lastN));
+        _lastN.back() = _best.fit;
+    }
 
     return true;
 }
