@@ -2,23 +2,23 @@ import sys
 import random
 
 def main():
-    if len(sys.argv) != 4:
-        sys.exit('4 arguments needed... program | output_file | numOfWords | lenOfWords')
+    if len(sys.argv) != 3:
+        sys.exit('3 arguments needed... program | numOfWords | lenOfWords')
 
-    path = sys.argv[1]
-    numOfWords = int(sys.argv[2])
-    length = int(sys.argv[3])
+    path = "reci.txt"
+    numOfWords = int(sys.argv[1])
+    length = int(sys.argv[2])
 
     allowedSymbols = ['A', 'C', 'T', 'G']
 
     try:
-        with open(path, 'a') as f:
+        with open(path, 'w') as f:
             for i in range(numOfWords):
                 word = ['A' for k in range(length)]
                 for j in range(length):
                     index = random.randrange(0, len(allowedSymbols))
                     word[j] = allowedSymbols[index]
-                f.write(''.join(word) + ' ')
+                f.write(''.join(word) + '\n')
 
     except Exception as e:
         raise e

@@ -1,3 +1,5 @@
+#include <iostream>
+#include <fstream>
 #include "closeststring.hpp"
 
 int main(int argc, char **argv) {
@@ -8,15 +10,17 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-//    std::ifstream in("words", std::ifstream::in);
-//    std::string tmp;
-//    while (in) {
-//        std::getline(in, tmp);
-//        setOfStrings.push_back(tmp);
-//    }
-
     //Set of string, for now, will be loading from txt file
-    std::vector<std::string> setOfStrings {"AGT", "ATT", "GAT", "CCC", "CCT"};
+    std::vector<std::string> setOfStrings;
+
+    std::string tmp;
+    std::ifstream in("reci.txt");
+    if(in.is_open()){
+        while (std::getline(in, tmp)) {
+            setOfStrings.push_back(tmp);
+        }
+        in.close();
+    }
 
     ClosestString t(setOfStrings, {'A', 'C', 'T', 'G'}, unsigned(atoi(argv[1])), unsigned(atoi(argv[2])),
             atof(argv[3]), unsigned(atoi(argv[4])), atof(argv[5]));

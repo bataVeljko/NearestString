@@ -1,5 +1,6 @@
 import json
 from subprocess import call
+import time
 
 def main():
     data = {}
@@ -16,7 +17,7 @@ def main():
     params_crossoverProb = data['crossoverProb']
     params_tournamentK = [(i//5) for i in params_popSize] # one fifth of the population
 
-    print("NumberOfIterations", "PopulationSize", "MutationRate", "TournamentSize", "CrossoverProbability", "LastIteration", "BestValue", "BestFit")
+    print("NumberOfIterations", "PopulationSize", "MutationRate", "TournamentSize", "CrossoverProbability", "LastIteration", "BestValue", "BestFit", "Elapsed time(ms)")
 
     # all combinations
     for i1 in params_iters:
@@ -25,7 +26,10 @@ def main():
                 for i4 in params_tournamentK:
                     for i5 in params_crossoverProb:
                         # run nearestString exec with arguments
+                        start = time.time()
                         call(['./nearestString', str(i1), str(i2), str(i3), str(i4), str(i5)])
+                        # time program needed to finish with passed arguments
+                        print("     %12.6f" % ((time.time()-start) * 1000))
 
 
 if __name__ == '__main__':

@@ -174,7 +174,7 @@ void ClosestString::optimize(){
     std::string spaces(numOfSpaces, ' ');
     std::cout << spaces << _best.value;
     printf(" %7d", _best.fit);
-    std::cout << std::endl;
+    //std::cout << std::endl;
 }
 
 bool ClosestString::stopConditions(size_t currIteration, const std::vector<Chromosome> &)
