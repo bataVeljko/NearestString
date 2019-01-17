@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
     std::vector<std::string> setOfStrings;
 
     std::string tmp;
-    std::ifstream in("reci.txt");
+    std::ifstream in("words.txt");
     if(in.is_open()){
         while (std::getline(in, tmp)) {
             setOfStrings.push_back(tmp);

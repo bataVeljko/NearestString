@@ -5,7 +5,7 @@ def main():
     if len(sys.argv) != 3:
         sys.exit('3 arguments needed... program | numOfWords | lenOfWords')
 
-    path = "reci.txt"
+    path = "words.txt"
     numOfWords = int(sys.argv[1])
     length = int(sys.argv[2])
 

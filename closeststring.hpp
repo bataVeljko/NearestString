@@ -30,6 +30,9 @@ public:
 
     //Main function, all begin here
     void optimize();
+
+private:
+
     //Create random population, from allowed gene values
     std::vector<Chromosome> initialPopulation();
     //tournament selection, with parametar K, which goes from GenerationSize/5 to GenerationSize
@@ -47,8 +50,8 @@ public:
     //Stop conditions for whole program
     bool stopConditions(size_t i, const std::vector<Chromosome> &chromosomes);
 
-private:
 
+    // members
     std::vector<std::string> _setOfStrings;
     std::vector<char> _allowedGeneValues;
     size_t _length;

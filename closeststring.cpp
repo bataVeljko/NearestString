@@ -28,6 +28,8 @@ ClosestString::ClosestString(const std::vector<std::string> &setOfStrings, const
     _length = _setOfStrings[0].length();
     _N = _numOfIterations / 4;
 
+    _best = Chromosome{"", int(_length + 1)};
+
     printf("%18d %14d %12.2lf %14d %20.1lf ", _numOfIterations, _generationSize, _mutationRate, _tournamentK, _crossoverProb);
 }
 
@@ -151,34 +153,23 @@ bool compare(Chromosome c1, Chromosome c2){
 void ClosestString::optimize(){
     std::vector<Chromosome> chromosomes = initialPopulation();
 
-    //std::cout << "-------------------------" << std::endl;
-    /*for (const auto & c : chromosomes) {
-        std::cout << c.value << " " << c.fit << std::endl;
-    }*/
-
     size_t currIteration = 0;
     while(stopConditions(currIteration, chromosomes)){
         std::vector<Chromosome> forReproduction = selection(chromosomes);
         chromosomes = createGeneration(forReproduction);
-        /*std::for_each(std::cbegin(chromosomes), std::cend(chromosomes),
-                      [] (Chromosome c) {std::cout << c.value << " -> " << c.fit << "\n";});
-        std::cout << std::endl;*/
 
         //Chromosome with smallest fit in population
         _best = *(std::min_element(std::cbegin(chromosomes), std::cend(chromosomes), compare));
         currIteration++;
-        //std::cout << "Iteration: " << (++currIteration) << " -> " << _best.value << " " << _best.fit << std::endl;
     }
     printf("%13zu ", currIteration);
     size_t numOfSpaces = 9 - _best.value.size();
     std::string spaces(numOfSpaces, ' ');
     std::cout << spaces << _best.value;
     printf(" %7d", _best.fit);
-    //std::cout << std::endl;
 }
 
-bool ClosestString::stopConditions(size_t currIteration, const std::vector<Chromosome> &)
-{
+bool ClosestString::stopConditions(size_t currIteration, const std::vector<Chromosome> &) {
     if (currIteration >= _numOfIterations)
         return false;
 
@@ -186,7 +177,7 @@ bool ClosestString::stopConditions(size_t currIteration, const std::vector<Chrom
         return false;
 
     // We won't use 0th generation, because it's inital population and best chromosome hasn't been initializated yet
-    if(currIteration){
+    if (currIteration) {
         if (int(_lastN.size()) < _N) {
             _lastN.push_back(_best.fit);
         } else {
