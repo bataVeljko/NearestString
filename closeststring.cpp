@@ -10,7 +10,7 @@ ClosestString::ClosestString(const std::vector<std::string> &setOfStrings, const
     _reproductionSize = 20;
     _tournamentK = 5;
     _crossoverProb = 0.5;
-    _N = _numOfIterations / 4;
+    // _N = _numOfIterations / 4;
 }
 
 ClosestString::ClosestString(const std::vector<std::string> &setOfStrings, const std::vector<char> &allowedGeneValues,
@@ -26,7 +26,7 @@ ClosestString::ClosestString(const std::vector<std::string> &setOfStrings, const
       _crossoverProb(crossoverProb)
 {
     _length = _setOfStrings[0].length();
-    _N = _numOfIterations / 4;
+    // _N = _numOfIterations / 4;
 
     _best = Chromosome{"", int(_length + 1)};
 
@@ -162,10 +162,10 @@ void ClosestString::optimize(){
         _best = *(std::min_element(std::cbegin(chromosomes), std::cend(chromosomes), compare));
         currIteration++;
     }
-    printf("%13zu ", currIteration);
-    size_t numOfSpaces = 9 - _best.value.size();
-    std::string spaces(numOfSpaces, ' ');
-    std::cout << spaces << _best.value;
+    // printf("%13zu ", currIteration);
+    // size_t numOfSpaces = 9 - _best.value.size();
+    // std::string spaces(numOfSpaces, ' ');
+    // std::cout << spaces << _best.value;
     printf(" %7d", _best.fit);
 }
 
@@ -177,21 +177,21 @@ bool ClosestString::stopConditions(size_t currIteration, const std::vector<Chrom
         return false;
 
     // We won't use 0th generation, because it's inital population and best chromosome hasn't been initializated yet
-    if (currIteration) {
-        if (int(_lastN.size()) < _N) {
-            _lastN.push_back(_best.fit);
-        } else {
-            // if we have the same result in the last N generations, we stop
-            int sum = std::accumulate(std::cbegin(_lastN), std::cend(_lastN), 0);
-            if (sum / _N == _lastN[0]) {
-                return false;
-            }
-            // else we add a new one, first we place first element on the back
-            // and then we replace it
-            std::rotate(std::begin(_lastN), std::end(_lastN)-1, std::end(_lastN));
-            _lastN.back() = _best.fit;
-        }
-    }
+    // if (currIteration) {
+    //     if (int(_lastN.size()) < _N) {
+    //         _lastN.push_back(_best.fit);
+    //     } else {
+    //         // if we have the same result in the last N generations, we stop
+    //         int sum = std::accumulate(std::cbegin(_lastN), std::cend(_lastN), 0);
+    //         if (sum / _N == _lastN[0]) {
+    //             return false;
+    //         }
+    //         // else we add a new one, first we place first element on the back
+    //         // and then we replace it
+    //         std::rotate(std::begin(_lastN), std::end(_lastN)-1, std::end(_lastN));
+    //         _lastN.back() = _best.fit;
+    //     }
+    // }
 
     return true;
 }

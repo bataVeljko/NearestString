@@ -64,8 +64,8 @@ private:
     Chromosome _best;
 
     // best fitness from the last N iterations
-    std::vector<int> _lastN;
-    int _N;
+    // std::vector<int> _lastN;
+    // int _N;
 };
 
 #endif // CLOSESTSTRING_HPP

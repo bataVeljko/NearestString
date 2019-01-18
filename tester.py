@@ -17,13 +17,16 @@ def main():
     params_crossoverProb = data['crossoverProb']
     params_tournamentK = [(i//5) for i in params_popSize] # one fifth of the population
 
-    print("NumberOfIterations", "PopulationSize", "MutationRate", "TournamentSize", "CrossoverProbability", "LastIteration", "BestValue", "BestFit", "Elapsed time(ms)")
+    print("NumberOfIterations", "PopulationSize", "MutationRate", "TournamentSize", "CrossoverProbability", " BestFit", "Elapsed time(ms)")
 
     # all combinations
     for i1 in params_iters:
         for i2 in params_popSize:
             for i3 in params_mutationRate:
                 for i4 in params_tournamentK:
+                    if i2 <= i4:
+                        break
+
                     for i5 in params_crossoverProb:
                         # run nearestString exec with arguments
                         start = time.time()

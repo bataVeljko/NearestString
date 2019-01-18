@@ -10,6 +10,7 @@ def main():
     length = int(sys.argv[2])
 
     allowedSymbols = ['A', 'C', 'T', 'G']
+    # allowedSymbols = ['0', '1']
 
     try:
         with open(path, 'w') as f:
